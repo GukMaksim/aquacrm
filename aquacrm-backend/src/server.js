@@ -8,7 +8,9 @@ dotenv.config();
 const app = express();
 
 // Импортируем маршруты
-import router from './routes/warehouseRoutes.js';
+import warehouseRouter from './routes/warehouseRoutes.js';
+import productRouter from './routes/productRoutes.js';
+import inventoryRouter from './routes/inventoryRoutes.js';
 
 // Подключаем middleware
 app.use(cors());
@@ -38,7 +40,9 @@ app.get('/', (req, res) => {
 });
 
 // Подключаем маршруты
-app.use('/api/warehouses', router);
+app.use('/api/warehouses', warehouseRouter);
+app.use('/api/products', productRouter);
+app.use('/api/inventory', inventoryRouter);
 
 // Запуск сервера
 const PORT = process.env.PORT || 5000;
