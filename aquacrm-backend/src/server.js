@@ -11,6 +11,7 @@ const app = express();
 import warehouseRouter from './routes/warehouseRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import inventoryRouter from './routes/inventoryRoutes.js';
+import movementRouter from './routes/movementsRoutes.js';
 
 // Подключаем middleware
 app.use(cors());
@@ -43,6 +44,7 @@ app.get('/', (req, res) => {
 app.use('/api/warehouses', warehouseRouter);
 app.use('/api/products', productRouter);
 app.use('/api/inventory', inventoryRouter);
+app.use('/api/movements', movementRouter);
 
 // Запуск сервера
 const PORT = process.env.PORT || 5000;
