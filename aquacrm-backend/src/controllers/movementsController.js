@@ -103,3 +103,58 @@ export const transferStock = async (req, res) => {
     session.endSession(); // Завершаем сессию
   }
 };
+
+// функція для оприбуткування товару
+export const incomeStock = async (req, res) => {
+  // Очікуємо ID складу та масив товарів
+  const { warehouseId, items } = req.body;
+
+  if (!warehouseId || !items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: 'Необхідно вказати склад та список товарів' })
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+     // Проходимо по кожному товару з накладної
+     for (const item of items) {
+      const { productId, quantity, price } = item;
+
+      if (!productId || !quantity || quantity <= 0) {
+        throw new Error(`Некоректні дані для товару: ${productId}`);
+     }
+
+     // 1. Оновлюємо або створюємо залишок на складі
+     await InventoryItem.findOneAndUpdate(
+      {
+        warehouseId: warehouseId,
+        productId: productId,
+        category: null,
+        subcategory: null,
+      },
+      { $inc: { quantity: quantity } },
+      { new: true, upsert: true, session }
+     );
+
+     // 2. Створюємо запис в журналі переміщень
+     const newMovement = new Movement({
+      productId,
+      quantity,
+      type: 'income',
+      to: { warehouseId: warehouseId},
+
+     });
+     await newMovement.save({ session });
+  }
+
+  await session.commitTransaction();
+  res.status(200).json({ message: 'Товари успішно оприбутковані' });
+
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(500).json({ message: 'Помилка при оприбуткуванні товарів', error: error.message });
+  } finally {
+    session.endSession();
+  }
+};
