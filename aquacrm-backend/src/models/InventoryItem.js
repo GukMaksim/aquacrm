@@ -18,18 +18,22 @@ const InventoryItemSchema = new mongoose.Schema({
     required: true,
     default: 0
   },
+  // Для склада-объекта это поле обязательно, для основного - null
   category: {
     type: String,
-    required: true,
+    trim: true,
+    default: null,
     enum: ['Сантехника', 'Электрика']
   },
+  // Может быть null, если товар лежит просто в категории
   subcategory: {
     type: String,
-    trim: true
+    trim: true,
+    default: null
   },
 }, { timestamps: true });
 
-InventoryItemSchema.index({ productId: 1, subcategory: 1 }, { unique: true });
+InventoryItemSchema.index({ productId: 1, warehouseId: 1, category: 1, subcategory: 1 }, { unique: true });
 
 const InventoryItem = mongoose.model("InventoryItem", InventoryItemSchema);
 
